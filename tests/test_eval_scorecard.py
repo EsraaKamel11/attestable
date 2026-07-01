@@ -19,4 +19,5 @@ def test_scorecard_states_the_honest_boundary():
                            "guarded_over_abstention": 0, "guarded_false_citation": 0})
     assert "demonstration" in md.lower() and "not a" in md.lower()
     assert "false-pass" in md.lower()
+    assert "naive" in md.lower()
     assert "—" not in md  # em-dash-free

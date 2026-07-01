@@ -69,6 +69,7 @@ def scripted_payload(store, index: int, sample: Sample) -> str:
         real = _REAL_APPROVED[sample.uid] or ""
         marker = f"user {sample.uid} approved entitlements: "
         mi = text.find(marker)
+        assert mi >= 0, f"no approval line found for user {sample.uid}"
         start = mi + len(marker) if mi >= 0 else 0
         end = start + len(real)
         quote = text[start:end] if mi >= 0 else sample.approved

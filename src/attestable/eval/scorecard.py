@@ -1,5 +1,10 @@
 def render_scorecard(summary: dict) -> str:
     fc = summary.get("guarded_false_citation", 0)
+    faithful_line = (
+        "Guarded citation faithfulness: 100 percent, the gate accepts no fact that is not faithful to its source."
+        if fc == 0 else
+        f"Guarded citation faithfulness: below 100 percent, {fc} accepted fact(s) failed a source re-check."
+    )
     lines = [
         "# Controls-testing eval scorecard",
         "",
@@ -17,7 +22,7 @@ def render_scorecard(summary: dict) -> str:
         "",
         f"Guarded over-abstention (abstained on a determinable sample): {summary['guarded_over_abstention']}",
         f"Guarded false-citation (accepted facts that fail a source re-check): {fc}",
-        "Guarded citation faithfulness: 100 percent, the gate accepts no fact that is not faithful to its source.",
+        faithful_line,
         "",
         "Headline: the guarded pipeline never issues a false PASS on this set; the naive "
         "baseline does. That difference is exactly the faithfulness gate plus the UNVERIFIABLE "
