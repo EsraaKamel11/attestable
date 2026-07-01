@@ -26,13 +26,16 @@ class EvidenceStore:
         path = self.root / ref.doc
         if not path.exists():
             return None
-        if ref.doc not in self._wb_cache:
-            self._wb_cache[ref.doc] = openpyxl.load_workbook(path, data_only=True)
-        wb = self._wb_cache[ref.doc]
-        if ref.sheet not in wb.sheetnames:
+        try:
+            if ref.doc not in self._wb_cache:
+                self._wb_cache[ref.doc] = openpyxl.load_workbook(path, data_only=True)
+            wb = self._wb_cache[ref.doc]
+            if ref.sheet not in wb.sheetnames:
+                return None
+            value = wb[ref.sheet][ref.cell].value
+            return None if value is None else str(value)
+        except Exception:
             return None
-        value = wb[ref.sheet][ref.cell].value
-        return None if value is None else str(value)
 
     def _resolve_span(self, span: TextSpan) -> str | None:
         text = self.text(span.doc)
