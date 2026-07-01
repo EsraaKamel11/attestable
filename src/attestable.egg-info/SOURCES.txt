@@ -1,8 +1,0 @@
-pyproject.toml
-src/attestable/__init__.py
-src/attestable.egg-info/PKG-INFO
-src/attestable.egg-info/SOURCES.txt
-src/attestable.egg-info/dependency_links.txt
-src/attestable.egg-info/requires.txt
-src/attestable.egg-info/top_level.txt
-tests/test_types.py
