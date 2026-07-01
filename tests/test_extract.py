@@ -20,3 +20,9 @@ def test_extract_uses_llm_and_prompt_mentions_keys():
     llm = FakeLLM()
     assert extract_facts(["current_entitlements"], "manifest", llm) == []
     assert "current_entitlements" in llm.seen and "manifest" in llm.seen
+
+
+def test_parse_assertions_rejects_unknown_kind():
+    import pytest
+    with pytest.raises(ValueError):
+        parse_assertions(json.dumps([{"claim": "x", "value": "y", "citation": {"kind": "nope"}}]))

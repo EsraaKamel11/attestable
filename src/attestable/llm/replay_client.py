@@ -11,4 +11,7 @@ class ReplayClient:
         path = self.fixtures_dir / f"{request_hash(prompt)}.json"
         if not path.exists():
             raise KeyError(f"no recorded response for prompt hash {path.stem}")
-        return json.loads(path.read_text(encoding="utf-8"))["response"]
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if "response" not in data:
+            raise ValueError(f"fixture {path} exists but has no 'response' key")
+        return data["response"]

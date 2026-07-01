@@ -1,4 +1,4 @@
-from attestable.types import Outcome, Assertion, VerifiedFact, CellRef, Verdict
+from attestable.types import Outcome, Assertion, VerifiedFact, CellRef, TextSpan, Verdict
 from attestable.workpaper import render_workpaper
 
 def test_workpaper_shows_verdict_facts_and_citations():
@@ -11,3 +11,18 @@ def test_workpaper_shows_verdict_facts_and_citations():
     assert "access_export.xlsx!Users!C2" in md
     assert "Segregation-of-duties conflict." in md
     assert "—" not in md  # no em-dash
+
+
+def test_textspan_citation_renders():
+    vf = VerifiedFact(Assertion("approved_entitlements", "read_only",
+                                TextSpan("approvals.txt", 5, 14, "read_only")), "read_only")
+    v = Verdict(Outcome.PASS, [vf], [], "ok")
+    md = render_workpaper("ctrl", "1", v)
+    assert "approvals.txt@5:14" in md
+
+
+def test_unmet_section_renders():
+    v = Verdict(Outcome.UNVERIFIABLE, [], ["approval record"], "cannot verify")
+    md = render_workpaper("ctrl", "1", v)
+    assert "## Unmet requirements" in md
+    assert "approval record" in md

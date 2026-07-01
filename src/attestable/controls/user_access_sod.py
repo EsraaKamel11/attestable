@@ -38,7 +38,7 @@ def _corpus_complete(store: EvidenceStore) -> bool:
 
 USER_ACCESS_SOD = ControlDefinition(
     name="user-access-review-sod",
-    required_keys=["current_entitlements", "approved_entitlements"],
+    required_keys=("current_entitlements", "approved_entitlements"),
     rule=_rule,
     approval_status=_approval_status,
     corpus_complete=_corpus_complete,

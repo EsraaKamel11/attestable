@@ -35,3 +35,4 @@ def test_absent_approval_with_incomplete_corpus_is_unverifiable():
 def test_missing_current_entitlements_is_unverifiable():
     out = decide(_control(), [], "14", store=None)
     assert out.outcome is Outcome.UNVERIFIABLE
+    assert "current" in out.narrative.lower()

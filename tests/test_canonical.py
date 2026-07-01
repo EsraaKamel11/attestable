@@ -16,3 +16,15 @@ def test_nondeterministic_types_rejected():
     import pytest
     with pytest.raises(TypeError):
         canonical_bytes({"t": object()})
+
+
+def test_enum_serializes_by_value():
+    from attestable.types import Outcome
+    b = canonical_bytes({"outcome": Outcome.PASS})
+    assert b"pass" in b and b"PASS" not in b
+
+
+def test_dataclass_serializes_by_fields():
+    from attestable.types import CellRef
+    b = canonical_bytes(CellRef("d", "s", "A1"))
+    assert b'"cell":"A1"' in b

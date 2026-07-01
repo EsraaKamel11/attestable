@@ -21,7 +21,7 @@ class AuditLog:
                    "payload": copy.deepcopy(payload), "prev_hash": prev}
         entry = dict(content, entry_hash=_entry_hash(content))
         self.entries.append(entry)
-        return dict(entry)
+        return copy.deepcopy(entry)
 
     def seal(self) -> str:
         return self.entries[-1]["entry_hash"] if self.entries else GENESIS

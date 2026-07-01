@@ -16,7 +16,7 @@ def decide(control: ControlDefinition, verified: list[VerifiedFact], sample_id: 
         return Verdict(Outcome.UNVERIFIABLE, verified, missing,
                        "Cannot test: current entitlements could not be verified.")
 
-    # only approved_entitlements is missing -> apply the boundary
+    # current_entitlements is verified; the remaining missing key is approval -> apply the boundary
     status = control.approval_status(store, sample_id)
     if status == "unreadable":
         return Verdict(Outcome.UNVERIFIABLE, verified, missing,

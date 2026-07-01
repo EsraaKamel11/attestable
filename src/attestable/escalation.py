@@ -7,10 +7,11 @@ class EscalationQueue:
         self.path = Path(path)
 
     def enqueue(self, item: dict) -> None:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.path.open("a", encoding="utf-8") as fh:
             fh.write(json.dumps(item, ensure_ascii=False) + "\n")
 
     def pending(self) -> list[dict]:
         if not self.path.exists():
             return []
-        return [json.loads(line) for line in self.path.read_text(encoding="utf-8").splitlines() if line]
+        return [json.loads(line) for line in self.path.read_text(encoding="utf-8").splitlines() if line.strip()]

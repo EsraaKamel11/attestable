@@ -17,3 +17,7 @@ def test_signed_seal_differs_from_seal():
     log = AuditLog(); log.append("a", "x", {"k": 1})
     assert log.signed_seal(b"secret") != log.seal()
     assert len(log.signed_seal(b"secret")) == 64
+
+
+def test_empty_log_seal_is_genesis():
+    assert AuditLog().seal() == GENESIS

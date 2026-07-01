@@ -8,12 +8,19 @@ cleanly, so the retained tip is what proves nothing was dropped.
 """
 import hashlib
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 from .canonical import canonical_bytes
 from .log import GENESIS
 from ..types import Assertion
 from ..serial import citation_from_dict
 from ..gate import verify_assertion
 from ..verdict import decide
+
+if TYPE_CHECKING:
+    from .log import AuditLog
+    from ..evidence import EvidenceStore
+    from ..predicates import PredicateRegistry
+    from ..controls.definition import ControlDefinition
 
 
 @dataclass
@@ -41,7 +48,7 @@ def _check_integrity(log) -> bool:
     return True
 
 
-def audit_replay(log, store, registry, control, sample_id: str, expected_seal) -> ReplayReport:
+def audit_replay(log: "AuditLog", store: "EvidenceStore", registry: "PredicateRegistry", control: "ControlDefinition", sample_id: str, expected_seal) -> ReplayReport:
     integrity = _check_integrity(log) and (log.seal() == expected_seal)
     verified, grounding = [], True
     for e in log.entries:

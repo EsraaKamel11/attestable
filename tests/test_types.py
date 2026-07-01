@@ -11,3 +11,8 @@ def test_verdict_holds_outcome():
     v = Verdict(outcome=Outcome.EXCEPTION, verified=[], unmet=["approval"], narrative="n")
     assert v.outcome is Outcome.EXCEPTION
     assert v.unmet == ["approval"]
+
+
+def test_verified_fact_construction():
+    vf = VerifiedFact(Assertion("k", "v", CellRef("d", "s", "A1")), "v")
+    assert vf.resolved == "v"

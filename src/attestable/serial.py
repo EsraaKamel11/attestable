@@ -4,7 +4,10 @@ from .types import Citation, CellRef, TextSpan
 def citation_to_dict(c: Citation) -> dict:
     if isinstance(c, CellRef):
         return {"kind": "cell", "doc": c.doc, "sheet": c.sheet, "cell": c.cell}
-    return {"kind": "span", "doc": c.doc, "start": c.start, "end": c.end, "quote": c.quote}
+    elif isinstance(c, TextSpan):
+        return {"kind": "span", "doc": c.doc, "start": c.start, "end": c.end, "quote": c.quote}
+    else:
+        raise TypeError(f"unknown citation type {type(c).__name__}")
 
 
 def citation_from_dict(d: dict) -> Citation:

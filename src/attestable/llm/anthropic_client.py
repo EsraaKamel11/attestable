@@ -15,7 +15,7 @@ class AnthropicClient:
         import anthropic  # imported lazily so tests never need the package/key
         key = os.environ.get("ANTHROPIC_API_KEY")
         if not key:
-            raise RuntimeError("ANTHROPIC_API_KEY not set; use ReplayClient for tests")
+            raise RuntimeError("ANTHROPIC_API_KEY not set or empty; use ReplayClient for tests")
         client = anthropic.Anthropic(api_key=key)
         msg = client.messages.create(
             model=self.model, max_tokens=2048,
