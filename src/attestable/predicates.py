@@ -13,6 +13,11 @@ class CellValueEquals:
         return isinstance(citation, CellRef)
 
     def faithful(self, assertion: Assertion, resolved: str) -> bool:
+        if not isinstance(assertion.citation, CellRef):
+            raise TypeError(
+                f"CellValueEquals.faithful requires a CellRef citation, "
+                f"got {type(assertion.citation).__name__}"
+            )
         return resolved.strip() == assertion.value.strip()
 
 
@@ -22,7 +27,11 @@ class ExactSpanVerbatim:
 
     def faithful(self, assertion: Assertion, resolved: str) -> bool:
         # the resolved substring must equal both the asserted value and the cited quote
-        assert isinstance(assertion.citation, TextSpan)
+        if not isinstance(assertion.citation, TextSpan):
+            raise TypeError(
+                f"ExactSpanVerbatim.faithful requires a TextSpan citation, "
+                f"got {type(assertion.citation).__name__}"
+            )
         return resolved == assertion.value == assertion.citation.quote
 
 
