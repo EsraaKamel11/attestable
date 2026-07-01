@@ -12,7 +12,7 @@ class EvidenceStore:
     def _safe_path(self, doc: str):
         root = self.root.resolve()
         target = (root / doc).resolve()
-        if not str(target).startswith(str(root)):
+        if not target.is_relative_to(root):
             return None
         return target
 

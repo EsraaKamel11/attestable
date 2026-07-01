@@ -57,3 +57,16 @@ def test_path_traversal_is_refused(evidence_root):
     store = EvidenceStore(evidence_root)
     assert store.resolve(CellRef("../outside.xlsx", "Users", "A1")) is None
     assert store.text("../outside.txt") == ""
+
+
+def test_sibling_prefix_directory_is_refused(tmp_path):
+    from attestable.evidence import EvidenceStore
+    from attestable.types import CellRef
+    root = tmp_path / "store"
+    root.mkdir()
+    sibling = tmp_path / "store2"   # shares the "store" name prefix
+    sibling.mkdir()
+    (sibling / "secret.txt").write_text("leak", encoding="utf-8")
+    store = EvidenceStore(root)
+    assert store.text("../store2/secret.txt") == ""            # refused, not "leak"
+    assert store.resolve(CellRef("../store2/secret.xlsx", "S", "A1")) is None
