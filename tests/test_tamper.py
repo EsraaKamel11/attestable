@@ -22,20 +22,37 @@ def _log():
 
 def test_T1_content_tamper_breaks_integrity(evidence_root):
     log = _log()
+    seal = log.seal()
     log.entries[0]["payload"]["value"] = "read_only"  # edit a logged fact
-    report = audit_replay(log, EvidenceStore(evidence_root), default_registry(), _control(), "14")
+    report = audit_replay(log, EvidenceStore(evidence_root), default_registry(), _control(), "14", seal)
     assert report.integrity is False
 
 def test_T2_structure_tamper_breaks_integrity(evidence_root):
     log = _log()
+    seal = log.seal()
     log.entries.pop(0)  # drop an entry
-    report = audit_replay(log, EvidenceStore(evidence_root), default_registry(), _control(), "14")
+    report = audit_replay(log, EvidenceStore(evidence_root), default_registry(), _control(), "14", seal)
     assert report.integrity is False
 
 def test_T3_source_tamper_kept_log_but_breaks_grounding(evidence_root):
     log = _log()
+    seal = log.seal()
     wb = openpyxl.load_workbook(evidence_root / "access_export.xlsx")
     wb["Users"]["C2"] = "read_only"  # edit the underlying evidence after sealing
     wb.save(evidence_root / "access_export.xlsx")
-    report = audit_replay(log, EvidenceStore(evidence_root), default_registry(), _control(), "14")
+    report = audit_replay(log, EvidenceStore(evidence_root), default_registry(), _control(), "14", seal)
     assert report.integrity is True and report.grounding is False
+
+def test_T4_tail_truncation_breaks_integrity(evidence_root):
+    log = _log()
+    seal = log.seal()
+    log.entries.pop()  # drop the last entry (the verdict)
+    report = audit_replay(log, EvidenceStore(evidence_root), default_registry(), _control(), "14", seal)
+    assert report.integrity is False and report.ok is False
+
+def test_empty_log_is_not_ok(evidence_root):
+    log = _log()
+    seal = log.seal()
+    log.entries.clear()
+    report = audit_replay(log, EvidenceStore(evidence_root), default_registry(), _control(), "14", seal)
+    assert report.ok is False

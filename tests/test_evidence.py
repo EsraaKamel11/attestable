@@ -51,3 +51,9 @@ def test_out_of_range_textspan_returns_none(evidence_root):
     """Out-of-range TextSpan returns None."""
     store = EvidenceStore(evidence_root)
     assert store.resolve(TextSpan("approvals.txt", 0, 99999, "x")) is None
+
+
+def test_path_traversal_is_refused(evidence_root):
+    store = EvidenceStore(evidence_root)
+    assert store.resolve(CellRef("../outside.xlsx", "Users", "A1")) is None
+    assert store.text("../outside.txt") == ""

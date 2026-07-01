@@ -1,3 +1,4 @@
+import copy
 import hashlib
 import hmac
 from dataclasses import dataclass, field
@@ -17,10 +18,10 @@ class AuditLog:
     def append(self, actor: str, action: str, payload: dict) -> dict:
         prev = self.entries[-1]["entry_hash"] if self.entries else GENESIS
         content = {"seq": len(self.entries), "actor": actor, "action": action,
-                   "payload": payload, "prev_hash": prev}
+                   "payload": copy.deepcopy(payload), "prev_hash": prev}
         entry = dict(content, entry_hash=_entry_hash(content))
         self.entries.append(entry)
-        return entry
+        return dict(entry)
 
     def seal(self) -> str:
         return self.entries[-1]["entry_hash"] if self.entries else GENESIS

@@ -9,10 +9,19 @@ class EvidenceStore:
         self._text_cache: dict[str, str] = {}
         self._wb_cache: dict[str, openpyxl.Workbook] = {}
 
+    def _safe_path(self, doc: str):
+        root = self.root.resolve()
+        target = (root / doc).resolve()
+        if not str(target).startswith(str(root)):
+            return None
+        return target
+
     def text(self, doc: str) -> str:
         if doc not in self._text_cache:
-            path = self.root / doc
-            self._text_cache[doc] = path.read_text(encoding="utf-8") if path.exists() else ""
+            path = self._safe_path(doc)
+            self._text_cache[doc] = (
+                path.read_text(encoding="utf-8") if path is not None and path.exists() else ""
+            )
         return self._text_cache[doc]
 
     def resolve(self, citation: Citation) -> str | None:
@@ -23,8 +32,8 @@ class EvidenceStore:
         return None
 
     def _resolve_cell(self, ref: CellRef) -> str | None:
-        path = self.root / ref.doc
-        if not path.exists():
+        path = self._safe_path(ref.doc)
+        if path is None or not path.exists():
             return None
         try:
             if ref.doc not in self._wb_cache:

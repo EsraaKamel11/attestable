@@ -34,7 +34,7 @@ def _run(root, uid, current_value, approved_value):
     queue = EscalationQueue(root / "queue.jsonl")
     log = AuditLog()
     result = run_control(USER_ACCESS_SOD, store, uid, llm, default_registry(), log, queue)
-    report = audit_replay(log, store, default_registry(), USER_ACCESS_SOD, uid)
+    report = audit_replay(log, store, default_registry(), USER_ACCESS_SOD, uid, result.seal)
     return result, report, queue
 
 def test_e2e_all_four_outcomes_and_replays(tmp_path: Path):

@@ -20,5 +20,5 @@ def _prepare(obj):
 
 
 def canonical_bytes(obj) -> bytes:
-    body = json.dumps(_prepare(obj), sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    body = json.dumps(_prepare(obj), sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
     return CANON_VERSION.encode("utf-8") + b"\n" + body.encode("utf-8")

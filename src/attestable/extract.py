@@ -1,5 +1,6 @@
 import json
-from .types import Assertion, CellRef, TextSpan
+from .types import Assertion
+from .serial import citation_from_dict
 from .llm.client import LLMClient
 
 
@@ -20,13 +21,7 @@ def build_prompt(required_keys: list[str], evidence_manifest: str) -> str:
 def parse_assertions(raw: str) -> list[Assertion]:
     facts: list[Assertion] = []
     for item in json.loads(raw):
-        c = item["citation"]
-        if c["kind"] == "cell":
-            citation = CellRef(c["doc"], c["sheet"], c["cell"])
-        elif c["kind"] == "span":
-            citation = TextSpan(c["doc"], int(c["start"]), int(c["end"]), c["quote"])
-        else:
-            raise ValueError(f"unknown citation kind {c['kind']!r}")
+        citation = citation_from_dict(item["citation"])
         facts.append(Assertion(item["claim"], str(item["value"]), citation))
     return facts
 

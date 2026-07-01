@@ -1,3 +1,11 @@
+"""Audit replay.
+
+Replay verifies integrity, grounding, and derivation from {log + sources}
+PLUS a retained (independently published) seal. Truncation of the tail of the
+log is only detectable via that retained seal, not from the log alone: an
+internally consistent prefix of a valid chain still relinks and rehashes
+cleanly, so the retained tip is what proves nothing was dropped.
+"""
 import hashlib
 from dataclasses import dataclass
 from .canonical import canonical_bytes
@@ -33,8 +41,8 @@ def _check_integrity(log) -> bool:
     return True
 
 
-def audit_replay(log, store, registry, control, sample_id: str) -> ReplayReport:
-    integrity = _check_integrity(log)
+def audit_replay(log, store, registry, control, sample_id: str, expected_seal) -> ReplayReport:
+    integrity = _check_integrity(log) and (log.seal() == expected_seal)
     verified, grounding = [], True
     for e in log.entries:
         if e["action"] == "fact.accepted":
@@ -46,7 +54,8 @@ def audit_replay(log, store, registry, control, sample_id: str) -> ReplayReport:
             else:
                 grounding = False
     logged = [e for e in log.entries if e["action"] == "verdict"]
-    derivation = True
-    if logged:
+    if not logged:
+        derivation = False
+    else:
         derivation = decide(control, verified, sample_id, store).outcome.value == logged[-1]["payload"]["outcome"]
     return ReplayReport(integrity, grounding, derivation)

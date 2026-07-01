@@ -19,5 +19,7 @@ def _control():
                              lambda s, sid: "readable", lambda s: True)
 
 def test_clean_log_replays_all_green(evidence_root):
-    report = audit_replay(_good_log(), EvidenceStore(evidence_root), default_registry(), _control(), "14")
+    log = _good_log()
+    seal = log.seal()
+    report = audit_replay(log, EvidenceStore(evidence_root), default_registry(), _control(), "14", seal)
     assert report.integrity and report.grounding and report.derivation and report.ok
