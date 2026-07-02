@@ -33,6 +33,7 @@ The entire suite runs **with no API key and no network**: every model call is se
 - `tests/test_pipeline_e2e.py` drives four users through the four outcomes end to end: a segregation-of-duties **EXCEPTION**; an **UNVERIFIABLE** case (an approval whose field is unreadable) that escalates to a human queue; an **EXCEPTION** for access with no approval over a *complete* approvals corpus; and a clean **PASS**, each with a fully green audit-replay.
 - `tests/test_adversarial_citation.py` is the "refuses to fabricate" proof: a fabricated source and a mis-cited value are both rejected at the gate.
 - `tests/test_tamper.py` is the tamper-evidence proof: **T1** alters a logged fact (integrity fails); **T2** drops a mid-chain entry (integrity fails); **T3** edits the underlying spreadsheet *after* sealing, so the log stays intact but grounding re-resolution catches it; **T4** truncates the tail (caught by the retained seal); and an emptied log is caught too.
+- `tests/test_eval_ablation.py` is the with-vs-without eval: over a 12-sample hand-labeled set, the guarded pipeline's false-pass rate is **0** while a naive no-guardrails baseline's is **5**. Run `attestable.eval.run_eval` to write a scorecard (`scorecard.json` and `scorecard.md`). This is a demonstration over a small synthetic labeled set, not a statistically powered benchmark; "naive" means the same model proposals with the faithfulness gate and the UNVERIFIABLE abstention removed.
 
 ## Architecture
 
@@ -68,7 +69,6 @@ This is a clean-room demonstration, and it is careful about what it does and doe
 
 ## What is next (designed, not yet built)
 
-- A minimal controls-testing eval with a **with-vs-without ablation**: the guarded pipeline's false-pass rate is 0 where a naive baseline's is not.
 - The **API-first + browser-fallback evidence connector** against a synthetic system of record, with the acquisition path itself written into the audit trail.
 
 ---
