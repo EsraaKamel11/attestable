@@ -1,5 +1,9 @@
 import openpyxl
+from dataclasses import dataclass
 from .evidence import EvidenceStore
+from .types import Outcome, Verdict
+from .audit.log import AuditLog
+from .pipeline import run_control
 
 
 def read_population(store: EvidenceStore) -> list[str]:
@@ -11,3 +15,41 @@ def read_population(store: EvidenceStore) -> list[str]:
         if row[0] is not None:
             ids.append(str(row[0]))
     return ids
+
+
+@dataclass
+class UserOutcome:
+    uid: str
+    verdict: Verdict
+    workpaper: str
+
+
+@dataclass
+class PopulationResult:
+    per_user: list
+    summary: dict
+    seal: str
+    log: AuditLog
+
+
+def _summarize(per_user: list) -> dict:
+    outs = [uo.verdict.outcome for uo in per_user]
+    return {
+        "tested": len(outs),
+        "passes": sum(1 for o in outs if o is Outcome.PASS),
+        "exceptions": sum(1 for o in outs if o is Outcome.EXCEPTION),
+        "escalations": sum(1 for o in outs if o is Outcome.UNVERIFIABLE),
+    }
+
+
+def run_population(control, store, llm_for, registry=None, queue=None) -> PopulationResult:
+    """Apply the per-record control across the whole population, under one shared audit log
+    sealed once. A hash-chained sample.begin marker precedes each user's run so the chain
+    can be segmented per user at replay. run_control is unchanged."""
+    log = AuditLog()
+    per_user = []
+    for uid in read_population(store):
+        log.append("population", "sample.begin", {"sample_id": uid})
+        rr = run_control(control, store, uid, llm_for(uid), registry, log=log, queue=queue)
+        per_user.append(UserOutcome(uid, rr.verdict, rr.workpaper))
+    return PopulationResult(per_user, _summarize(per_user), log.seal(), log)
