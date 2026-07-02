@@ -1,9 +1,15 @@
-import openpyxl
 from dataclasses import dataclass
-from .evidence import EvidenceStore
-from .types import Outcome, Verdict
+
+import openpyxl
+
 from .audit.log import AuditLog
+from .audit.replay import _check_integrity
+from .evidence import EvidenceStore
+from .gate import verify_assertion
 from .pipeline import run_control
+from .serial import citation_from_dict
+from .types import Assertion, CellRef, Outcome, TextSpan, Verdict
+from .verdict import decide
 
 
 def read_population(store: EvidenceStore) -> list[str]:
@@ -53,13 +59,6 @@ def run_population(control, store, llm_for, registry=None, queue=None) -> Popula
         rr = run_control(control, store, uid, llm_for(uid), registry, log=log, queue=queue)
         per_user.append(UserOutcome(uid, rr.verdict, rr.workpaper))
     return PopulationResult(per_user, _summarize(per_user), log.seal(), log)
-
-
-from .serial import citation_from_dict
-from .gate import verify_assertion
-from .verdict import decide
-from .audit.replay import _check_integrity
-from .types import Assertion
 
 
 @dataclass
@@ -116,9 +115,6 @@ def population_replay(log, store, registry, control, expected_seal) -> Populatio
     return PopulationReplayReport(integrity, grounding, derivation, counts)
 
 
-from .types import CellRef, TextSpan
-
-
 def _cite(fact) -> str:
     c = fact.assertion.citation
     if isinstance(c, CellRef):
@@ -145,7 +141,7 @@ def render_population_summary(control, result: PopulationResult) -> str:
         if uo.verdict.outcome is Outcome.EXCEPTION:
             cites = ", ".join(_cite(f) for f in uo.verdict.verified) or "no verified facts"
             lines.append(f"- user {uo.uid}: {uo.verdict.narrative}  [cited: {cites}]")
-    lines += ["", "## Escalations (UNVERIFIABLE, routed to human review)"]
+    lines += ["", "## Escalations (UNVERIFIABLE, for human review)"]
     for uo in result.per_user:
         if uo.verdict.outcome is Outcome.UNVERIFIABLE:
             lines.append(f"- user {uo.uid}: {uo.verdict.narrative}")
