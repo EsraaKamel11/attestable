@@ -34,6 +34,7 @@ The entire suite runs **with no API key and no network**: every model call is se
 - `tests/test_adversarial_citation.py` is the "refuses to fabricate" proof: a fabricated source and a mis-cited value are both rejected at the gate.
 - `tests/test_tamper.py` is the tamper-evidence proof: **T1** alters a logged fact (integrity fails); **T2** drops a mid-chain entry (integrity fails); **T3** edits the underlying spreadsheet *after* sealing, so the log stays intact but grounding re-resolution catches it; **T4** truncates the tail (caught by the retained seal); and an emptied log is caught too.
 - `tests/test_eval_ablation.py` is the with-vs-without eval: over a 12-sample hand-labeled set, the guarded pipeline's false-pass rate is **0** while a naive no-guardrails baseline's is **5**. Run `attestable.eval.run_eval` to write a scorecard (`scorecard.json` and `scorecard.md`). This is a demonstration over a small synthetic labeled set, not a statistically powered benchmark; "naive" means the same model proposals with the faithfulness gate and the UNVERIFIABLE abstention removed.
+- `tests/test_connector_e2e.py` is the auditable-acquisition demo: evidence is fetched from a synthetic FastAPI + SQLite system-of-record over its API, normalized into the same cited evidence forms, and the acquisition path (method + locator + a content hash of the fetched bytes) is written into the same hash chain. Replay then audits the fetch too: **T5** changes an uncited byte in a fetched file after sealing, which grounding does not see but the acquisition check catches.
 
 ## Architecture
 
@@ -62,14 +63,14 @@ src/attestable/
 This is a clean-room demonstration, and it is careful about what it does and does not claim.
 
 - **Not an auditor's tool.** It brings the agent-reliability half, not audit-domain judgment. The control logic rests on documented rules, not professional judgment.
-- **Synthetic data only.** The evidence and the system of record are synthetic; there is no integration with a real IAM or GRC system. The evidence-acquisition connector (API-first with a browser fallback) is designed, not built here (a later slice).
+- **Synthetic data only.** The evidence and the system of record are synthetic; there is no integration with a real IAM or GRC system. The API evidence connector against a synthetic system-of-record is built and its acquisition is audited; the browser fallback is designed, not built here (proven against a live UI elsewhere). Acquisition-audit proves evidence is unchanged since fetch with a recorded method and locator, it does not prove the source authentically served it (there is no source signature). There is no integration with a real IAM or GRC system.
 - **"Regulator-grade in spirit," not certified.** The audit trail embodies the properties a regulator would want: integrity, provenance to a source of record, reproducible derivation, and independent verifiability. It is a demonstration of those properties, not a certified or legally-admissible record. In particular, tail-truncation is only detectable with a **retained or published seal**, not from the log alone, so replay takes that seal as an input.
 - **Deterministic faithfulness only.** The gate checks literal value and span equality; anything not literally decidable becomes UNVERIFIABLE rather than being judged by the model.
 - **One control built; a second (three-way match) designed on paper.** The engine is control-pluggable by design; only the user-access + SoD control is built.
 
 ## What is next (designed, not yet built)
 
-- The **API-first + browser-fallback evidence connector** against a synthetic system of record, with the acquisition path itself written into the audit trail.
+- The **browser fallback** for the evidence connector (Playwright driving a read-only SoR UI when its API is unavailable), recorded and replayed on the same keyless spine, with the browser action sequence written into the audit trail exactly as the API path is.
 
 ---
 
