@@ -114,3 +114,39 @@ def population_replay(log, store, registry, control, expected_seal) -> Populatio
         if logged in bucket:
             counts[bucket[logged]] += 1
     return PopulationReplayReport(integrity, grounding, derivation, counts)
+
+
+from .types import CellRef, TextSpan
+
+
+def _cite(fact) -> str:
+    c = fact.assertion.citation
+    if isinstance(c, CellRef):
+        return f"{c.doc}!{c.sheet}!{c.cell}"
+    if isinstance(c, TextSpan):
+        return f"{c.doc}@{c.start}:{c.end}"
+    return "unknown"
+
+
+def render_population_summary(control, result: PopulationResult) -> str:
+    s = result.summary
+    lines = [
+        f"# Population working paper: {control.name}",
+        "",
+        f"Population tested: {s['tested']}",
+        f"Passes: {s['passes']}  Exceptions: {s['exceptions']}  Escalations: {s['escalations']}",
+        "",
+        "Population-based over the full provided access export. A demonstration over a synthetic "
+        "data set, not a claim of enterprise scale or continuous assurance.",
+        "",
+        "## Exceptions",
+    ]
+    for uo in result.per_user:
+        if uo.verdict.outcome is Outcome.EXCEPTION:
+            cites = ", ".join(_cite(f) for f in uo.verdict.verified) or "no verified facts"
+            lines.append(f"- user {uo.uid}: {uo.verdict.narrative}  [cited: {cites}]")
+    lines += ["", "## Escalations (UNVERIFIABLE, routed to human review)"]
+    for uo in result.per_user:
+        if uo.verdict.outcome is Outcome.UNVERIFIABLE:
+            lines.append(f"- user {uo.uid}: {uo.verdict.narrative}")
+    return "\n".join(lines)
