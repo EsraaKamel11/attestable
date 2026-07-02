@@ -24,6 +24,12 @@ class EvidenceStore:
             )
         return self._text_cache[doc]
 
+    def raw(self, doc: str) -> bytes | None:
+        path = self._safe_path(doc)
+        if path is None or not path.exists():
+            return None
+        return path.read_bytes()
+
     def resolve(self, citation: Citation) -> str | None:
         if isinstance(citation, CellRef):
             return self._resolve_cell(citation)
