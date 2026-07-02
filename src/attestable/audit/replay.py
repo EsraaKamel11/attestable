@@ -28,10 +28,11 @@ class ReplayReport:
     integrity: bool
     grounding: bool
     derivation: bool
+    acquisition: bool = True
 
     @property
     def ok(self) -> bool:
-        return self.integrity and self.grounding and self.derivation
+        return self.integrity and self.grounding and self.derivation and self.acquisition
 
 
 def _recompute(entry: dict) -> str:
@@ -65,4 +66,11 @@ def audit_replay(log: "AuditLog", store: "EvidenceStore", registry: "PredicateRe
         derivation = False
     else:
         derivation = decide(control, verified, sample_id, store).outcome.value == logged[-1]["payload"]["outcome"]
-    return ReplayReport(integrity, grounding, derivation)
+    acquisition = True
+    for e in log.entries:
+        if e["action"] == "evidence.acquired":
+            p = e["payload"]
+            raw = store.raw(p["doc"])
+            if raw is None or hashlib.sha256(raw).hexdigest() != p["content_hash"]:
+                acquisition = False
+    return ReplayReport(integrity, grounding, derivation, acquisition)
