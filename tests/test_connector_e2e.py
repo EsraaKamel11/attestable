@@ -54,4 +54,5 @@ def test_t5_acquisition_catches_uncited_tamper(tmp_path):
     with open(tmp_path / "approvals.txt", "a", encoding="utf-8") as f:
         f.write("# added after sealing\n")
     report = audit_replay(log, EvidenceStore(tmp_path), default_registry(), USER_ACCESS_SOD, "14", result.seal)
+    assert report.integrity is True and report.derivation is True
     assert report.grounding is True and report.acquisition is False and report.ok is False

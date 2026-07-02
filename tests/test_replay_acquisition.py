@@ -46,6 +46,7 @@ def test_acquisition_false_when_fetched_doc_changes_after_seal(tmp_path):
     fresh = EvidenceStore(tmp_path)  # fresh store so caches do not hide the tamper
     report = audit_replay(log, fresh, default_registry(), USER_ACCESS_SOD, "14", result.seal)
     assert report.grounding is True      # the cited span is unchanged
+    assert report.integrity is True and report.derivation is True
     assert report.acquisition is False   # the doc's bytes changed since fetch
     assert report.ok is False
 
