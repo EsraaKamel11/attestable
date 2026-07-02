@@ -1,6 +1,6 @@
 # attestable
 
-A verifiable evidence-and-citation pipeline for an audit agent. An AI agent tests an internal control against sampled evidence and produces a decision where **every assertion is linked to a source span, nothing is asserted without a citation**, and **the agent's own actions are written to a hash-chained, tamper-evident log that anyone can replay**.
+A verifiable evidence-and-citation pipeline for an audit agent. An AI agent tests an internal control across a population of records and produces a decision where **every assertion is linked to a source span, nothing is asserted without a citation**, and **the agent's own actions are written to a hash-chained, tamper-evident log that anyone can replay**.
 
 Built as a clean-room demonstration of the half of audit automation that gets harder, not easier, as you move into regulated customers: an agent that audits must itself be auditable.
 
@@ -12,6 +12,9 @@ Built as a clean-room demonstration of the half of audit automation that gets ha
 - Every step is appended to a **hash-chained audit log** with a pinned canonical serialization.
 - An independent **audit-replay** re-checks, from the sealed log plus the source documents plus a retained seal, that the chain is intact, every citation still resolves and still matches, and the verdict still follows from the evidence. No model and no trust are required to re-verify.
 - When the agent cannot establish a required fact, it returns **UNVERIFIABLE** and escalates to a human. It never guesses a pass.
+- It tests the **whole population** of users in the access export, not a hand-picked sample, under one sealed log; replay re-verifies every user and recomputes the population summary (tested, exceptions, escalations) from the log, so the headline numbers are audited, not asserted.
+- It **audits its own evidence gathering**: how each fact was acquired (an API call against a synthetic system-of-record, plus a content hash of the bytes) is written into the same chain, so replay catches a source that was changed after it was fetched.
+- A **with-vs-without eval** puts a number on the guardrails: on one labeled set the guarded pipeline has a **false-pass rate of 0** where a naive no-guardrails baseline has 5, enforced as a CI gate.
 
 The worked control is a **user-access review with a segregation-of-duties check**, an IT general control and the most common area in real SOX 404 programs.
 
