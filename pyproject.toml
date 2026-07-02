@@ -10,6 +10,10 @@ dev = ["pytest>=8", "fastapi>=0.110", "httpx>=0.27"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+filterwarnings = [
+    # Upstream: Starlette's TestClient deprecates httpx in favor of httpx2. Not our code; filtered so test output stays clean.
+    "ignore:Using .httpx. with .starlette.testclient. is deprecated:Warning",
+]
 
 [build-system]
 requires = ["setuptools>=68"]
